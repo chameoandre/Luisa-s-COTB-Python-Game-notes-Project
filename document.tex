@@ -23,6 +23,8 @@
 \usepackage{amsmath, amssymb}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta, shapes.geometric, shapes.symbols, positioning, fit, shapes}
+\usepackage[style=abnt, backend=biber]{biblatex}
+\addbibresource{references.bib}
 
 % Definição da cor institucional
 \definecolor{azulIFSC}{RGB}{30, 60, 90} 
@@ -44,7 +46,7 @@
     colback=white,
     colframe=azulIFSC,
     fonttitle=\bfseries\large,
-    title=#1,
+    title={#1},
     enhanced,
     attach boxed title to top left={yshift=-2mm, xshift=2mm},
     boxed title style={colback=azulIFSC},
@@ -414,7 +416,7 @@ while True:
 \end{boxTutorial}
 
 \newpage
-\begin{boxTutorial}{Tutorial 6: Score, Estímulo-Resposta e Feedback}
+\begin{boxTutorial}{Tutorial 6: Score e Feedback de Estímulo-Resposta}
 \label{sec: Etapa 6: Interação}
 
     Relação entre estímulo (visual), resposta (teclado/clique) e feedback (som/visual).
@@ -439,7 +441,7 @@ if event.type == pygame.KEYDOWN and event.key == pygame.K_a:
 \end{boxTutorial}
 
 \newpage
-\begin{boxTutorial}{Tutorial 7: Fases, Sequências e Progressão}
+\begin{boxTutorial}{Tutorial 7: Fases e Progressão de Sequências}
 \label{sec: Etapa 7: Fases, Sequências e Progressão}
 
     Nesta etapa organizamos a lógica de fases, sequências de estímulos e tempo-limite de resposta.
@@ -512,7 +514,7 @@ while mode == "menu":
 
 
 \newpage
-\begin{boxTutorial}{Tutorial 9: Fase 1 — Score e Feedback}
+\begin{boxTutorial}{Tutorial 9: Fase 1 com Score e Feedback}
 \label{sec: Tutorial 9: Fase 1}
 
     Implementação da mecânica básica: quatro alvos (setas), um alvo destacado por rodada e atualização do placar.
@@ -586,11 +588,9 @@ pygame.mixer.music.load("sounds/trilha_fase.mp3")
 pygame.mixer.music.play(-1) # Loop infinito
     \end{minted}
     
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=0.85\linewidth]{https://upload.wikimedia.org/wikipedia/commons/0/06/BeepBox_interface.png}
-        \caption{Interface do BeepBox para criação de melodias.}
-    \end{figure}
+    \begin{boxAvisos}{Feedback e Gamificação}
+    A utilização estratégica de áudio e visual (fanfarras, ícones de vitória) reforça o engajamento e o aprendizado atencional.
+\end{boxAvisos}
     
     \subsubsection*{Resultados de Aprendizagem}
     \begin{itemize}
@@ -625,6 +625,14 @@ C - G - E - A B A A - -
     \begin{itemize}
         \item Compreensão de melodia, ritmo e exportação de áudio para jogos.
     \end{itemize}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.85\linewidth]{beepbox_ui.png}
+        \caption{Interface do BeepBox para criação de trilhas 8-bit.}
+        \label{fig:beepbox-ui}
+    \end{figure}
+\end{boxTutorial}
 
 \begin{boxTutorial}{Tutorial: Fluxo de Trabalho Git}
 \label{sec:fluxo-trabalho-git}

@@ -342,27 +342,28 @@ python3 ola.py
 
 \begin{boxTutorial}{Tutorial 3: Design do Jogo e Feedback Musical}
 \label{sec: Etapa 3: Design do Jogo e Feedback Musical}
-    \begin{verbatim}
-    pygame.mixer.init()
-    screen = pygame.display.set_mode((400, 300))
-    pygame.display.set_caption("Teste de Sons")
 
-    som_acerto = pygame.mixer.Sound("acerto.wav")
-    som_erro = pygame.mixer.Sound("erro.wav")
+    \begin{minted}{python}
+pygame.mixer.init()
+screen = pygame.display.set_mode((400, 300))
+pygame.display.set_caption("Teste de Sons")
 
-    rodando = True
-    while rodando:
-        for evento in pygame.event.get():
-            if evento.type == pygame.QUIT:
-                rodando = False
-            if evento.type == pygame.KEYDOWN:
-                if evento.key == pygame.K_a:
-                    som_acerto.play()
-                elif evento.key == pygame.K_e:
-                    som_erro.play()
+som_acerto = pygame.mixer.Sound("acerto.wav")
+som_erro = pygame.mixer.Sound("erro.wav")
 
-    pygame.quit()
-    \end{verbatim}
+rodando = True
+while rodando:
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            rodando = False
+        if evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_a:
+                som_acerto.play()
+            elif evento.key == pygame.K_e:
+                som_erro.play()
+
+pygame.quit()
+    \end{minted}
 \end{boxTutorial}
 
 \subsubsection*{Primeiros Exercícios Práticos}
@@ -380,212 +381,35 @@ python3 ola.py
 \end{itemize}
 
 \newpage
-\section{Tutorial 5: Estrutura Básica do Jogo (Pygame)}
-\label{sec: Etapa 5: Estrutura Básica do Jogo (Pygame)}
+\begin{boxTutorial}{Tutorial 5: Telas e Gráficos com Pygame}
+\label{sec:tutorial5}
 
-    Nesta etapa inicia-se a implementação do jogo \textit{Musicalizando no Céu} em Python, utilizando a biblioteca \texttt{pygame}. O objetivo é criar a janela, o laço principal de execução, o fundo (céu) e um primeiro estímulo visual (estrela piscando).
+    Configuração de ambiente, criação de janelas e renderização de formas geométricas.
     
     \subsubsection*{Objetivos}
     \begin{itemize}
-        \item Configurar um ambiente de projeto em Python (preferencialmente com \textit{virtualenv}).
-        \item Instalar e validar o \texttt{pygame}.
-        \item Renderizar uma janela com fundo e uma estrela piscando.
-    \end{itemize}
-    
-    \subsubsection*{Requisitos}
-    \begin{itemize}
-        \item Raspberry Pi OS funcional (via VirtualBox).
-        \item Python 3 instalado.
-        \item Acesso à internet ou mídia local com os pacotes.
-    \end{itemize}
-    
-    \subsubsection*{Guia de Aprendizagem}
-    \begin{enumerate}
-        \item Abrir o terminal no Raspberry Pi OS e criar a pasta do projeto:
-    \begin{verbatim}
-    mkdir -p ~/projetos/musicalizando-no-ceu && cd ~/projetos/musicalizando-no-ceu
-    \end{verbatim}
-    
-        \item (Opcional, recomendado) Criar e ativar um ambiente virtual:
-    \begin{verbatim}
-    python3 -m venv .venv
-    source .venv/bin/activate
-    \end{verbatim}
-    
-        \item Instalar o \texttt{pygame}:
-    \begin{verbatim}
-    pip3 install pygame
-    \end{verbatim}
-    
-        \item Criar a estrutura inicial de pastas e um arquivo principal:
-    \begin{verbatim}
-    mkdir assets assets/sounds assets/images
-    touch main.py
-    \end{verbatim}
-    
-        \item (Opcional) Adicionar uma imagem simples de estrela em \texttt{assets/images/estrela.png}.
-              Caso não tenha uma imagem, o código desenhará a estrela como forma geométrica.
-    
-        \item Abrir o arquivo \texttt{main.py} no editor e inserir o código base:
-    \begin{verbatim}
-    import pygame
-    import sys
-    
-    WIDTH, HEIGHT = 800, 480
-    FPS = 60
-    
-    def desenhar_estrela(surface, x, y, size, color):
-        # Desenha uma estrela simples via polygon (fallback sem imagem)
-        pts = [(x, y - size), (x + size*0.3, y - size*0.3), (x + size, y - size*0.3),
-               (x + size*0.45, y + size*0.1), (x + size*0.6, y + size),
-               (x, y + size*0.45), (x - size*0.6, y + size),
-               (x - size*0.45, y + size*0.1), (x - size, y - size*0.3),
-               (x - size*0.3, y - size*0.3)]
-        pygame.draw.polygon(surface, color, pts)
-    
-    def main():
-        pygame.init()
-        screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        pygame.display.set_caption("Musicalizando no Céu - Protótipo")
-        clock = pygame.time.Clock()
-    
-        # Fundo (céu)
-        SKY = (20, 30, 80)
-    
-        # Controle de piscar
-        blink_timer = 0.0
-        blink_period = 0.8  # segundos
-        star_visible = True
-    
-        # Se houver imagem:
-        star_img = None
-        try:
-            star_img = pygame.image.load("assets/images/estrela.png").convert_alpha()
-        except Exception:
-            star_img = None
-    
-        while True:
-            dt = clock.tick(FPS) / 1000.0  # delta time em segundos
-    
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-    
-            blink_timer += dt
-            if blink_timer >= blink_period:
-                star_visible = not star_visible
-                blink_timer = 0.0
-    
-            screen.fill(SKY)
-    
-            # Desenha estrela
-            if star_visible:
-                if star_img:
-                    rect = star_img.get_rect(center=(WIDTH//2, HEIGHT//2))
-                    screen.blit(star_img, rect)
-                else:
-                    desenhar_estrela(screen, WIDTH//2, HEIGHT//2, 30, (255, 215, 0))
-    
-            pygame.display.flip()
-    
-    if __name__ == "__main__":
-        main()
-    \end{verbatim}
-    
-        \item Executar o protótipo:
-    \begin{verbatim}
-    python3 main.py
-    \end{verbatim}
-    \end{enumerate}
-    
-    \subsubsection*{Primeiros Exercícios Práticos}
-    \begin{itemize}
-        \item Alterar o tamanho e a velocidade do piscar da estrela.
-        \item Trocar o fundo por um gradiente de céu ou imagem.
-        \item Posicionar duas estrelas piscando em ritmos diferentes.
-    \end{itemize}
-    
-    \subsubsection*{Resultados de Aprendizagem Esperados}
-    \begin{itemize}
-        \item Domínio do ciclo básico do \texttt{pygame} (janela, eventos, desenho, atualização).
-        \item Compreensão de como animar elementos por tempo.
-    \end{itemize}
-    
-
-\newpage
-\section{Tutorial 6: Interação e Feedback (Entrada do Usuário + Sons)}
-\label{sec: Etapa 6: Interação e Feedback (Entrada do Usuário + Sons)}
-
-    Agora adicionamos interação: a estrela ativa representa um estímulo. A jogadora responde por teclado (ou clique). Em seguida, o jogo avalia acerto/erro e toca feedback sonoro/visual. Nesta etapa mantemos o foco em teclado e clique. Mapeamento para GPIO ficará como atividade extra.
-    
-    \subsubsection*{Objetivos}
-    \begin{itemize}
-        \item Mapear entrada do usuário (teclado e clique do mouse).
-        \item Associar estímulo \textrightarrow{} resposta correta.
-        \item Implementar feedback positivo/negativo (som + visual).
-        \item Exibir pontuação simples.
-    \end{itemize}
-    
-    \subsubsection*{Requisitos}
-    \begin{itemize}
-        \item Concluir a Etapa 5.
-        \item Arquivos de som colocados em \texttt{assets/sounds/} 
-              (ex.: \texttt{acerto.wav}, \texttt{erro.wav}).
-    \end{itemize}
-    
-    \subsubsection*{Guia de Aprendizagem}
-    \begin{enumerate}
-        \item Instalar suporte de áudio (já incluso no \texttt{pygame}). Se necessário, testar:
-    \begin{verbatim}
-    python3 - << 'PY'
-    import pygame, time
-    pygame.mixer.init()
-    s = pygame.mixer.Sound(file="assets/sounds/acerto.wav")
-    s.play()
-    time.sleep(1)
-    print("OK")
-    PY
-    \end{verbatim}
-    
-        \item Atualizar o \texttt{main.py} para suportar interação e feedback:
-    \begin{verbatim}
-    import pygame, sys, time
-    
-    WIDTH, HEIGHT = 800, 480
-    FPS = 60
-    SKY = (20, 30, 80)
-    WHITE = (245, 245, 245)
-    GOLD = (255, 215, 0)
-    RED  = (200, 60, 60)
-    GREEN= (60, 180, 75)
-    
-    def desenhar_estrela(surface, x, y, size, color):
-        pts = [(x, y - size), (x + size*0.3, y - size*0.3), (x + size, y - size*0.3),
-               (x + size*0.45, y + size*0.1), (x + size*0.6, y + size),
-               (x, y + size*0.45), (x - size*0.6, y + size),
-               (x - size*0.45, y + size*0.1), (x - size, y - size*0.3),
-               (x - size*0.3, y - size*0.3)]
-        pygame.draw.polygon(surface, color, pts)
-\begin{boxTutorial}{Tutorial 5: Telas e Gráficos Simples com Pygame}
-\label{sec: Etapa 5: Pygame Screens}
-
-    Criação de janelas, desenho de formas geométricas e gerenciamento de cores.
-    
-    \subsubsection*{Objetivos}
-    \begin{itemize}
-        \item Manipular o sistema de coordenadas do Pygame.
-        \item Desenhar alvos lúdicos (estrelas, círculos).
+        \item Criar a janela e o loop principal do jogo.
+        \item Renderizar o fundo e uma estrela piscando.
     \end{itemize}
     
     \begin{minted}{python}
-screen.fill((20, 30, 80)) # Cor do céu
-pygame.draw.circle(screen, (255, 255, 255), (400, 240), 50)
+import pygame, sys
+WIDTH, HEIGHT = 800, 480
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+
+# Loop principal
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit(); sys.exit()
+    screen.fill((20, 30, 80))
+    pygame.display.flip()
     \end{minted}
     
     \subsubsection*{Resultados de Aprendizagem}
     \begin{itemize}
-        \item Domínio básico de renderização 2D.
+        \item Domínio do ciclo básico do Pygame.
     \end{itemize}
 \end{boxTutorial}
 
@@ -772,17 +596,10 @@ pygame.mixer.music.play(-1) # Loop infinito
     \begin{itemize}
         \item Uso estratégico de áudio para reforçar o engajamento e feedback.
     \end{itemize}
-    \end{minted}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\linewidth]{https://cdn.pixabay.com/photo/2017/01/31/17/44/gaming-2024671_960_720.png}
-    \caption{Exemplo de feedback sonoro visual: ao vencer, toca-se uma fanfarra e aparece um símbolo de comemoração.}
-    \label{fig:game-sound-feedback}
-\end{figure}
-
-\subsubsection*{Conclusão}
-Com esta etapa, o jogo passa a ter um componente sonoro dinâmico que reforça o envolvimento da jogadora. Sons bem escolhidos ajudam a criar uma atmosfera lúdica, reforçando o aprendizado e a atenção durante a interação.
+    
+    \subsubsection*{Conclusão}
+    Com esta etapa, o jogo passa a ter um componente sonoro dinâmico que reforça o envolvimento da jogadora.
+\end{boxTutorial}
 
 
 \newpage
@@ -824,9 +641,19 @@ C - G - E - A B A A - -
 git add .
 git commit -m "Mensagem clara"
 git push origin main
-    \end{minted}
-\end{boxTutorial}
 
+# 3. Ver o que mudou
+git status
+
+# 4. Adicionar as alterações
+git add .
+
+# 5. Criar o commit
+git commit -m "Mensagem clara"
+
+# 6. Enviar para o GitHub
+git push origin main
+    \end{minted}
 
     \begin{figure}[H]
         \centering
@@ -849,24 +676,10 @@ git push origin main
         \end{tikzpicture}
         \caption{Ciclo de desenvolvimento com Git.}
     \end{figure}
-# 3. Ver o que mudou
-git status
 
-# 4. Adicionar as alterações
-git add .
-
-# 5. Criar o commit
-git commit -m "Adiciona trilha sonora da Fase 3"
-
-# 6. Enviar para o GitHub
-git push origin main
-
-
-\subsection{Conclusão}
-
-Seguindo este fluxo, cada colaborador pode trabalhar de forma independente e sincronizada,
-mantendo o código-fonte atualizado e versionado de maneira segura.  
-Esse processo será adotado por padrão durante o desenvolvimento conjunto do projeto.
+    \subsubsection*{Conclusão}
+    Seguindo este fluxo, cada colaborador pode trabalhar de forma independente e sincronizada.
+\end{boxTutorial}
 
 
 

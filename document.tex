@@ -386,32 +386,53 @@ pygame.quit()
 \begin{boxTutorial}{Tutorial 5: Telas e Gráficos com Pygame}
 \label{sec:tutorial5}
 
-    Configuração de ambiente, criação de janelas e renderização de formas geométricas.
+    Nesta etapa inicia-se a implementação em Python utilizando a biblioteca \texttt{pygame}. O objetivo é criar a janela principal, o laço de execução e um estímulo visual (estrela piscando).
     
-    \subsubsection*{Objetivos}
-    \begin{itemize}
-        \item Criar a janela e o loop principal do jogo.
-        \item Renderizar o fundo e uma estrela piscando.
-    \end{itemize}
+    \subsubsection*{Guia de Aprendizagem}
+    \begin{enumerate}
+        \item Criar a pasta do projeto e o ambiente virtual:
+    \begin{minted}{bash}
+mkdir -p ~/projetos/musicalizando && cd ~/projetos/musicalizando
+python3 -m venv .venv
+source .venv/bin/activate
+pip install pygame
+    \end{minted}
     
+        \item Código base para a estrela piscando:
     \begin{minted}{python}
 import pygame, sys
 WIDTH, HEIGHT = 800, 480
-pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+FPS = 60
 
-# Loop principal
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit(); sys.exit()
-    screen.fill((20, 30, 80))
-    pygame.display.flip()
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    clock = pygame.time.Clock()
+    blink_timer = 0.0
+    star_visible = True
+
+    while True:
+        dt = clock.tick(FPS) / 1000.0
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: pygame.quit(); sys.exit()
+
+        blink_timer += dt
+        if blink_timer >= 0.8:
+            star_visible = not star_visible; blink_timer = 0.0
+
+        screen.fill((20, 30, 80))
+        if star_visible:
+            pygame.draw.circle(screen, (255, 215, 0), (WIDTH//2, HEIGHT//2), 30)
+        pygame.display.flip()
+
+if __name__ == "__main__": main()
     \end{minted}
+    \end{enumerate}
     
-    \subsubsection*{Resultados de Aprendizagem}
+    \subsubsection*{Exercícios Práticos}
     \begin{itemize}
-        \item Domínio do ciclo básico do Pygame.
+        \item Alterar o tamanho e a velocidade do piscar da estrela.
+        \item Posicionar duas estrelas em ritmos diferentes.
     \end{itemize}
 \end{boxTutorial}
 
@@ -419,67 +440,170 @@ while True:
 \begin{boxTutorial}{Tutorial 6: Score e Feedback de Estímulo-Resposta}
 \label{sec: Etapa 6: Interação}
 
-    Relação entre estímulo (visual), resposta (teclado/clique) e feedback (som/visual).
+    Mapeamento de entrada do usuário (teclado/clique) e associação com feedback positivo/negativo.
     
-    \subsubsection*{Objetivos}
-    \begin{itemize}
-        \item Implementar o loop de jogo com detecção de acerto.
-        \item Atualizar pontuação e exibir feedbacks em tempo real.
-    \end{itemize}
+    \subsubsection*{Guia de Aprendizagem}
+    \begin{enumerate}
+        \item Testar o áudio no Raspberry Pi:
+        \begin{minted}{python}
+import pygame
+pygame.mixer.init()
+s = pygame.mixer.Sound("acerto.wav")
+s.play()
+        \end{minted}
     
-    \begin{minted}{python}
+        \item Mapear tecla 'A' para acerto:
+        \begin{minted}{python}
 if event.type == pygame.KEYDOWN and event.key == pygame.K_a:
     if star_visible:
-        pontos += 1
-        acerto_snd.play()
-    \end{minted}
+        pontos += 1; acerto_snd.play()
+    else:
+        pontos = max(0, pontos-1); erro_snd.play()
+        \end{minted}
+    \end{enumerate}
     
-    \subsubsection*{Resultados de Aprendizagem}
+    \subsubsection*{Exercícios Práticos}
     \begin{itemize}
-        \item Entendimento do Game Loop e lógica de estados.
+        \item Adicionar feedback visual (ex: borda verde para acerto, vermelha para erro).
+        \item Exibir a pontuação atualizada na tela usando \texttt{pygame.font}.
     \end{itemize}
 \end{boxTutorial}
 
 \newpage
 \begin{boxTutorial}{Tutorial 7: Fases e Progressão de Sequências}
-\label{sec: Etapa 7: Fases, Sequências e Progressão}
+\label{sec: Etapa 7: Fases e Progressão de Sequências}
 
-    Nesta etapa organizamos a lógica de fases, sequências de estímulos e tempo-limite de resposta.
+    Nesta etapa organizamos a lógica de fases, adicionamos sequências (listas de estímulos) e tempo-limite de resposta. Ao completar a sequência, a fase é concluída e pode-se avançar.
     
     \subsubsection*{Objetivos}
     \begin{itemize}
-        \item Definir fases com parâmetros (velocidade, tempo).
-        \item Implementar sequência de alvos.
-        \item Exibir barra de progresso da fase.
+        \item Definir fases com parâmetros (nº de estímulos, tempo de resposta, velocidade).
+        \item Implementar sequência de alvos e avaliação de acerto dentro do tempo.
+        \item Exibir barra de progresso ou contador de acertos da fase.
     \end{itemize}
     
+    \subsubsection*{Requisitos}
+    \begin{itemize}
+        \item Concluir as Etapas 5 e 6.
+    \end{itemize}
+    
+    \subsubsection*{Guia de Aprendizagem}
+    \begin{enumerate}
+        \item Criar um arquivo de configuração simples (\texttt{levels.py}) com as fases:
     \begin{minted}{python}
+# levels.py
 LEVELS = [
     {"name": "Fase 1", "seq_len": 4, "blink_period": 0.9, "timeout": 2.8},
     {"name": "Fase 2", "seq_len": 6, "blink_period": 0.7, "timeout": 2.0},
+    {"name": "Fase 3", "seq_len": 8, "blink_period": 0.55, "timeout": 1.5},
 ]
-# ... loop de progressão de fases ...
     \end{minted}
     
+        \item Atualizar \texttt{main.py} para controlar sequência, tempo e progresso:
+    \begin{minted}{python}
+import pygame, sys, random, time
+from levels import LEVELS
+
+WIDTH, HEIGHT = 800, 480
+FPS = 60
+SKY = (20, 30, 80)
+WHITE = (245, 245, 245)
+GOLD = (255, 215, 0)
+GREEN= (60, 180, 75)
+RED  = (200, 60, 60)
+
+def desenhar_estrela(surface, x, y, size, color):
+    # Desenha um polígono estelar de 5 pontas
+    pts = [(x, y - size), (x + size*0.3, y - size*0.3), (x + size, y - size*0.3),
+           (x + size*0.45, y + size*0.1), (x + size*0.6, y + size),
+           (x, y + size*0.45), (x - size*0.6, y + size),
+           (x - size*0.45, y + size*0.1), (x - size, y - size*0.3),
+           (x - size*0.3, y - size*0.3)]
+    pygame.draw.polygon(surface, color, pts)
+
+def main():
+    pygame.init(); pygame.mixer.init()
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("Musicalizando no Céu - Fases")
+    clock = pygame.time.Clock()
+    font = pygame.font.SysFont(None, 26)
+
+    # Carregar sons (Certifique-se de que os arquivos existem em assets/sounds/)
+    # acerto_snd = pygame.mixer.Sound("assets/sounds/acerto.wav")
+    # erro_snd   = pygame.mixer.Sound("assets/sounds/erro.wav")
+
+    level_idx = 0; pontos = 0
+
+    while level_idx < len(LEVELS):
+        level = LEVELS[level_idx]
+        seq_len = level["seq_len"]; blink_per = level["blink_period"]; timeout_s = level["timeout"]
+        sequence = [random.choice([0,1]) for _ in range(seq_len)]
+        seq_pos = 0; star_visible = False; blink_timer = 0.0; stim_timer = 0.0
+        feedback_color = None; feedback_timer = 0.0; responded = False
+
+        running_phase = True
+        while running_phase:
+            dt = clock.tick(FPS)/1000.0
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: pygame.quit(); sys.exit()
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_a:
+                    if not responded:
+                        responded = True
+                        if star_visible:
+                            pontos += 1; feedback_color = GREEN
+                        else:
+                            pontos = max(0, pontos-1); feedback_color = RED
+                        feedback_timer = 0.3
+
+            # Lógica de piscar e sequência
+            blink_timer += dt
+            if blink_timer >= blink_per:
+                blink_timer = 0.0
+                if seq_pos < seq_len:
+                    star_visible = bool(sequence[seq_pos]); seq_pos += 1
+                    responded = False; stim_timer = 0.0
+            
+            # Fim da fase
+            if seq_pos >= seq_len and responded: running_phase = False
+
+            # Renderização
+            screen.fill(SKY)
+            color = GOLD if star_visible else WHITE
+            desenhar_estrela(screen, WIDTH//2, HEIGHT//2, 30, color)
+            
+            # HUD e Progresso
+            prog_w = int((seq_pos/seq_len) * (WIDTH-40))
+            pygame.draw.rect(screen, WHITE, (20, 20, WIDTH-40, 10), 1)
+            pygame.draw.rect(screen, GREEN, (20, 20, prog_w, 10))
+            header = font.render(f"{level['name']} | Pontos: {pontos}", True, WHITE)
+            screen.blit(header, (20, 40))
+            
+            if feedback_color:
+                pygame.draw.rect(screen, feedback_color, (0, 0, WIDTH, 5))
+                feedback_timer -= dt
+                if feedback_timer <= 0: feedback_color = None
+            
+            pygame.display.flip()
+        level_idx += 1
+    pygame.quit()
+
+if __name__ == "__main__": main()
+    \end{minted}
+    \end{enumerate}
+
+    \subsubsection*{Exercícios Práticos}
+    \begin{itemize}
+        \item Trocar a regra da sequência para notas (ex.: 3 sons diferentes).
+        \item Ajustar \texttt{seq\_len} e \texttt{timeout} no arquivo \texttt{levels.py}.
+        \item Exibir uma tela de ``Fase Concluída'' com o score final.
+    \end{itemize}
+
     \subsubsection*{Resultados de Aprendizagem Esperados}
     \begin{itemize}
         \item Controle de fluxo por fases e temporização por estímulo.
         \item Implementação de progressão e finalização de fase.
     \end{itemize}
 \end{boxTutorial}
-
-\subsubsection*{Exercícios Práticos}
-\begin{itemize}
-    \item Trocar a regra da sequência para notas (ex.: 3 cores/sons diferentes com teclas distintas).
-    \item Ajustar \texttt{seq\_len}, \texttt{blink\_period} e \texttt{timeout} por fase, refinando a dificuldade.
-    \item Exibir ``vidas'' (erros máximos) e reiniciar a fase ao esgotar.
-\end{itemize}
-
-\subsubsection*{Resultados de Aprendizagem Esperados}
-\begin{itemize}
-    \item Controle de fluxo por fases e temporização por estímulo.
-    \item Implementação de progressão e finalização de fase.
-\end{itemize}
 
 \newpage
 \begin{boxTutorial}{Tutorial 8: Tela Inicial e Registro do Jogador}
@@ -538,29 +662,68 @@ if event.key in STAR_KEYS:
 \begin{boxTutorial}{Tutorial 10: Interação com Botões (GPIO)}
 \label{sec:Tutorial10_Botoes}
 
-    Integração de botões físicos via \textbf{GPIO} e alternativas de simulação via software.
+    Integração de botões físicos via \textbf{GPIO} e alternativas de simulação via software para desenvolvimento em ambientes sem hardware.
     
-    \subsubsection*{Objetivos}
+    \subsubsection*{Dicas Técnicas}
     \begin{itemize}
-        \item Conectar botões físicos e ler estados com \texttt{gpiozero}.
-        \item Criar mocks para testes em ambientes virtuais.
+        \item Sempre use apenas 3.3V nos GPIOs (não use 5V).
+        \item Botões simples devem ser conectados entre o pino GPIO e GND, com pull-up interno habilitado.
     \end{itemize}
     
-    \begin{minted}{python}
+    \subsubsection*{Guia de Aprendizagem}
+    \begin{enumerate}
+        \item Exemplo de botão físico com \texttt{gpiozero}:
+        \begin{minted}{python}
 from gpiozero import Button
+def on_hw_button():
+    print("Botão físico pressionado!")
+
+btn = Button(17, pull_up=True, bounce_time=0.05)
+btn.when_pressed = on_hw_button
+        \end{minted}
+
+        \item Exemplo de Mock GPIO (para testes locais em PC):
+        \begin{minted}{python}
+from gpiozero import Device, Button
+from gpiozero.pins.mock import MockFactory
+Device.pin_factory = MockFactory()
 btn = Button(17, pull_up=True)
-btn.when_pressed = simular_clique_jogo
-    \end{minted}
+
+# Simular pressão via código
+pin = Device.pin_factory.pin(17)
+pin.drive_low(); pin.drive_high()
+        \end{minted}
+    \end{enumerate}
     
-    \subsubsection*{Resultados de Aprendizagem}
+    \subsubsection*{Exercícios Práticos}
     \begin{itemize}
-        \item Integração entre hardware e software.
+        \item Adicionar um segundo botão para ``Pausar'' o jogo.
+        \item Registrar timestamps de pressões em CSV (tempo de reação).
     \end{itemize}
 \end{boxTutorial}
 
 \begin{boxTutorial}{Tutorial 11: Layout Dinâmico e Responsivo}
 \label{sec:Tutorial11_LayoutDinamico}
 
+    Nesta etapa aprendemos a posicionar elementos de forma relativa ao tamanho da tela, permitindo que o jogo rode em diferentes resoluções.
+    
+    \subsubsection*{Guia de Aprendizagem}
+    \begin{enumerate}
+        \item Criar uma função auxiliar para calcular posições relativas:
+        \begin{minted}{python}
+def pos_rel(x_frac, y_frac, width, height):
+    """ Retorna posição relativa dado percentual da tela """
+    return int(width * x_frac), int(height * y_frac)
+        \end{minted}
+    
+        \item Criar botões com base em porcentagens:
+        \begin{minted}{python}
+WIDTH, HEIGHT = 900, 600
+start_btn_rect = pygame.Rect(0, 0, WIDTH//4, HEIGHT//12)
+start_btn_rect.center = pos_rel(0.5, 0.7, WIDTH, HEIGHT)
+        \end{minted}
+    \end{enumerate}
+    
     \subsubsection*{Exercícios Práticos}
     \begin{itemize}
         \item Criar uma função \texttt{resize\_ui()} para reposicionamento dinâmico.
@@ -571,30 +734,45 @@ btn.when_pressed = simular_clique_jogo
 \begin{boxTutorial}{Tutorial 12: Trilha Sonora e Ambiência}
 \label{sec: Etapa 12: Criação e Edição de Trilha Sonora no Jogo}
 
-    Inclusão de sons e trilhas sonoras para tornar o jogo mais imersivo.
-    
-    \subsubsection*{Objetivos}
-    \begin{itemize}
-        \item Incorporar trilhas de fundo e efeitos sonoros de vitória/derrota.
-        \item Explorar ferramentas como BeepBox e Soundtrap.
-    \end{itemize}
+Nesta etapa, Luisa aprenderá a incorporar sons ao jogo, criando músicas de fundo e efeitos específicos para eventos de vitória e derrota.
+
+\subsubsection*{Checklist de Atividades}
+\begin{itemize}
+    \item [ ] Escolher trilha, som de vitória e som de derrota (BeepBox/Mixkit).
+    \item [ ] Salvar arquivos em \texttt{.mp3} ou \texttt{.wav} na pasta \texttt{./sounds/}.
+    \item [ ] Inserir código Python para reprodução sonora.
+\end{itemize}
+
+\subsubsection*{Sites Recomendados}
+\begin{itemize}
+    \item \href{https://freesound.org}{Freesound.org} – Efeitos e sons gratuitos [\textit{prontos para baixar}].
+    \item \href{https://beepbox.co}{BeepBox.co} – Cria melodias curtas em estilo 8-bit [\textit{para criação própria}].
+    \item \href{https://soundtrap.com}{Soundtrap.com} – Editor online para trilhas elaboradas.
+\end{itemize}
     
     \begin{minted}{python}
 pygame.mixer.music.load("sounds/trilha_fase.mp3")
 pygame.mixer.music.play(-1) # Loop infinito
     \end{minted}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.85\linewidth]{soundtrap_ui.png}
+        \caption{Interface do Soundtrap: ferramenta para criação de trilhas sonoras complexas.}
+        \label{fig:soundtrap-ui}
+    \end{figure}
     
     \begin{boxAvisos}{Feedback e Gamificação}
     A utilização estratégica de áudio e visual (fanfarras, ícones de vitória) reforça o engajamento e o aprendizado atencional.
 \end{boxAvisos}
-    
-    \subsubsection*{Resultados de Aprendizagem}
-    \begin{itemize}
-        \item Uso estratégico de áudio para reforçar o engajamento e feedback.
-    \end{itemize}
-    
-    \subsubsection*{Conclusão}
-    Com esta etapa, o jogo passa a ter um componente sonoro dinâmico que reforça o envolvimento da jogadora.
+
+\subsubsection*{Resultados de Aprendizagem}
+\begin{itemize}
+    \item Uso estratégico de áudio para reforçar o engajamento e feedback.
+\end{itemize}
+
+\subsubsection*{Conclusão}
+Com esta etapa, o jogo passa a ter um componente sonoro dinâmico que reforça o envolvimento da jogadora.
 \end{boxTutorial}
 
 
@@ -604,14 +782,9 @@ pygame.mixer.music.play(-1) # Loop infinito
 \begin{boxTutorial}{Tutorial 13: Introdução ao BeepBox e Tema Mario}
 \label{sec:tutorial13}
 
-    Apresentação do \textbf{BeepBox} para criação de trilhas 8-bit e recriação do tema do \textit{Super Mario Bros.}
+    Apresentação do \textbf{BeepBox} para criação de trilhas 8-bit e recriação do tema do \textit{Super Mario Bros.} em versão simplificada.
     
-    \subsubsection*{Objetivos}
-    \begin{itemize}
-        \item Explorar a interface e recursos básicos do BeepBox.
-        \item Recriar o tema do \textit{Super Mario Bros.} em versão simplificada.
-    \end{itemize}
-    
+    \subsubsection*{Guia Musical (Mario Theme)}
     \begin{verbatim}
 E E - E - C E - G - - - G
 C - G - E - A B A A - -
